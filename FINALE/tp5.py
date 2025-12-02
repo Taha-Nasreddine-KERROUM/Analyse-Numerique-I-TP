@@ -82,8 +82,8 @@ def jacobi_REC(mat, b, n_max, epsilon=1e-6, k=0, x_old=None, x_new=None):
     if k >= n_max:
         print("\n")
         print("Solution finale:")
-        printX(x_new if k > 0 else x_old)
-        return x_new if k > 0 else x_old
+        printX(x_old)
+        return x_old
 
     print(f"---------- Iteration k = {k + 1} ----------")
 
