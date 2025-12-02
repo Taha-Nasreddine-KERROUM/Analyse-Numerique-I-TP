@@ -70,37 +70,34 @@ def jacobi_REC(mat, b, n_max, epsilon=1e-6, k=0, x_old=None, x_new=None):
     n = len(mat)
 
     if x_old is None:
+        if not diagonally_dominant(mat):
+            print("WARNING: The matrix is not diagonally dominant.")
+            print("The algorithm will likely diverge (result in infinity).")
+
         x_old = [0.0] * n
         x_new = [0.0] * n
         print(f"Initialisation: x^(0) = {x_old}")
         print()
 
-        if not diagonally_dominant(mat):
-            print("WARNING: The matrix is not diagonally dominant.")
-            print("The algorithm will likely diverge (result in infinity).")
-
     if k >= n_max:
+        print("\n")
+        print("Solution finale:")
+        printX(x_new if k > 0 else x_old)
+        return x_new if k > 0 else x_old
+
+    print(f"---------- Iteration k = {k + 1} ----------")
+
+    x_new = updateXJacobiEdition(mat, n, b, k, x_old, x_new)
+
+    printX5edition(x_new, k, n)
+
+    if convergeEpsilone(x_old, x_new, n, k, epsilon):
         print("\n")
         print("Solution finale:")
         printX(x_new)
         return x_new
 
-    if k > 0:
-        if convergeEpsilone(x_old, x_new, n, k, epsilon):
-            print(f"Convergence atteinte a l'iteration {k}")
-            print("\n")
-            print("Solution finale:")
-            printX(x_new)
-            return x_new
-
-    print(f"---------- Iteration k = {k + 1} ----------")
-
-    x_temp = updateXJacobiEdition(mat, n, b, k, x_old, x_new)
-
-    printX5edition(x_temp, k, n)
-
-    return jacobi_REC(mat, b, n_max, epsilon, k + 1, x_temp, x_temp)
-
+    return jacobi_REC(mat, b, n_max, epsilon, k + 1, x_new[:], [0.0] * n)
 
 def gauss_seidel_REC(mat, b, n_max, epsilon=1e-6, k=0, x=None, x_old=None):
     n = len(mat)

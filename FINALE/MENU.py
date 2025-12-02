@@ -381,7 +381,8 @@ def MainMenu():
         3- Gauss
         4- Algorithme de décomposition LU
         5- ALGORITHME DE GAUSS-JORDAN
-        6- METHODES ITERATIVES"""))
+        6- METHODES ITERATIVES
+        : """))
 
         if choice == 1:
             menuT1()
@@ -399,3 +400,5 @@ def MainMenu():
         end = time.perf_counter_ns()
         exc_ns = end - start
         print(f"execution time : {exc_ns} ns")
+
+MainMenu()
