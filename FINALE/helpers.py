@@ -263,3 +263,102 @@ def diagonally_dominant(mat):
 
     print("Matrix is Diagonally Dominant. Convergence is guaranteed.")
     return True
+
+def detp1Choice(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    print("""
+    1- recursive
+    2- iterative
+    """)
+    choice = int(input("Choisissez 1,2: "))
+    if choice == 1:
+        print(f"det|{name}|: ", determinant(A))
+    elif choice == 2:
+        print(f"det|{name}|: ", determinantIterative(A))
+
+def per2coltp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    col1 = int(input("Entrez la colonne 1: "))
+    col2 = int(input("Entrez la colonne 2: "))
+    permet2col(A, col1, col2)
+    print(f"Après permutation des colonnes {col1} et {col2} de {name}:")
+    print_system(A)
+
+def per2linertp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    lin1 = int(input("Entrez la ligne 1: "))
+    lin2 = int(input("Entrez la ligne 2: "))
+    permet2liner(A, lin1, lin2)
+    print(f'Après permutation des lignes {lin1} et {lin2} de {name}:')
+    print_system(A)
+
+def symtrqTp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    print(f"{name} est symétrique." if isSymétrique(A) else f"{name} n'est pas symétrique.")
+
+def diagnlTp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+    print(f"{name} est diagonale." if isDiagonale(A) else f"{name} n'est pas diagonale.")
+
+def tringlinfTp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    print(f"{name} est triangulaire inférieure." if isTriangulaireInfrieure(A) else f"{name} n'est pas triangulaire inférieure.")
+
+def tringlsupTp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    print(f"{name} est triangulaire supérieure." if isTriangulaireSuprieure(A) else f"{name} n'est pas triangulaire supérieure.")
+
+def transTp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    print(f"Transposée de {name}:")
+    print_system(transpose(A))
+
+def prodTp1(A, B):
+    if A is None or B is None:
+        print('enterrer deux matrice!')
+        return
+    print("Produit est A et B:")
+    print_system(produit2matrices(A, B))
+
+def sommeTp1(A, B):
+    if A is None or B is None:
+        print('enterrer deux matrice!')
+        return
+    print("Somme est:")
+    print_system(somme2matrices(A, B))
+
+def affprintTp1(A, name = "A"):
+    if A is None:
+        print('enterrer une matrice!')
+        return
+    print(f"Matrice {name}:")
+    print_system(A)
+
+def valid(choice, low, high):
+    choice = str(choice)
+    return choice.isdigit() and low <= int(choice) <= high
+
+def setAb(A, b):
+    if A is None:
+        print("Entrez la taille de la matrice:")
+        n = int(input("n = "))
+        A = lireMatrice(n)
+    if b is None:
+        print("\nEntrez le vecteur b:")
+        b = lireb(len(A))
+    return A, b

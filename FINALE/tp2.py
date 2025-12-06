@@ -115,3 +115,8 @@ def RECramer(mat, b, i=0, x=None, detA=None):
     submat = copyMat(mat, i, b)
     x.append(determinantIterative(submat) / detA)
     return RECramer(mat, b, i + 1, x, detA)
+
+
+def order(A, b, col_perm):
+    x = remontéeITR(A, b)
+    reorder_x_after_column_swaps(x, col_perm)
