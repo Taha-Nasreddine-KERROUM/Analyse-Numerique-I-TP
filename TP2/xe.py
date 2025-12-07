@@ -1,285 +1,506 @@
-import sys
+from copy import deepcopy
 
-sys.path.append('../TP1')
-from tp import determinantIterative as det, lireMatrice as lireA, isTriangulaireSuprieure as triS, \
-    isTriangulaireInfrieure as triI
-import time
+from tp5 import *
 
+def menuT1(M1 = None, M2 = None):
+    while True:
+        A, B = deepcopy(M1), deepcopy(M2)
 
-def changeCol(mat, col, new):
-    for i in range(len(mat)):
-        mat[i][col] = new[i]
+        print("""
+        1- Lire une matrice carrée de taille N.
+        2- Afficher une matrice carrée de taille N.
+        3- Afficher la matrice d’identité d’ordre N.
+        4- Calculer la somme de deux matrices de même taille.
+        5- Calculer le produit de deux matrices.
+        6- Calculer la transposée d’une matrice carrée.
+        7- Tester si une matrice est triangulaire supérieure.
+        8- Tester si une matrice est triangulaire inférieure.
+        9- Tester si une matrice carrée est diagonale.
+        10- Tester si une matrice carrée est symétrique.
+        11- permeter deux lignes de une matrice.
+        12- permeter deux colonnes de une matrice.
+        13- determinant.
+        """)
 
+        try:
+            choice = int(input("Choisissez 1,13 or anything for out: "))
+        except:
+            break
 
-def copyMat(mat):
-    n = len(mat)
-    new = [[0 for _ in range(n)] for _ in range(n)]
-    for i in range(n):
-        for j in range(n):
-            new[i][j] = mat[i][j]
+        if choice == 1:
+            try:
+                n = int(input("Entrez N: "))
+            except:
+                continue
 
-    return new
+            print("Lecture de A:")
+            M1 = lireMatrice(n)
+            print("Lecture de B:")
+            M2 = lireMatrice(n)
 
+        elif choice == 2:
+            affprintTp1(A)
+            affprintTp1(B, 'B')
 
-def descenteITR(mat, b):
-    if triS(mat) == True:
-        print('must be sup')
-        return None
+        elif choice == 3:
+            try:
+                m = int(input("Entrez n: "))
+                print("Matrice d'identité d'ordre", m, ":")
+                print_system(matriceDidentit(m))
+            except:
+                pass
 
-    n = len(mat)
-    x = []
-    x.append(b[0] / mat[0][0])
+        elif choice == 4:
+            sommeTp1(A, B)
 
-    for i in range(1, n):
-        somme = 0
-        for j in range(i - 1, -1, -1):
-            somme += mat[i][j] * x[j]
-        x.append((b[i] - somme) / mat[i][i])
-    return x
+        elif choice == 5:
+            prodTp1(A, B)
 
+        elif choice == 6:
+            transTp1(A)
+            transTp1(B, 'B')
 
-def descenteREC(mat, b, i=0, j=None, x=None, somme=0):
-    if triS(mat) == True:
-        print('must be sup')
-        return None
+        elif choice == 7:
+            tringlsupTp1(A)
+            tringlsupTp1(B, 'B')
 
-    if x is None:
-        x = [0.0] * len(mat)
-    if j is None:
-        j = i - 1
+        elif choice == 8:
+            tringlinfTp1(A)
+            tringlinfTp1(B, 'B')
 
-    if i == len(mat):
-        return x
+        elif choice == 9:
+            diagnlTp1(A)
+            diagnlTp1(B, 'B')
 
-    if j >= 0:
-        return descenteREC(mat, b, i, j - 1, x, somme + mat[i][j] * x[j])
-    else:
-        x[i] = (b[i] - somme) / mat[i][i]
-        return descenteREC(mat, b, i + 1, None, x, 0)
+        elif choice == 10:
+            symtrqTp1(A)
+            symtrqTp1(B, 'B')
 
+        elif choice == 11:
+            per2linertp1(A)
+            per2linertp1(B, 'B')
 
-def remontéeITR(mat, b):
-    if triI(mat) == True:
-        print('must be inf')
-        return None
+        elif choice == 12:
+            per2coltp1(A)
+            per2coltp1(B, 'B')
 
-    n = len(mat)
-    x = [0 for _ in range(n)]
-    x[n - 1] = b[n - 1] / mat[n - 1][n - 1]
-    for i in range(n - 2, -1, -1):
-        somme = 0
-        for j in range(i + 1, n):
-            somme += mat[i][j] * x[j]
-        x[i] = (b[i] - somme) / mat[i][i]
-    return x
+        elif choice == 13:
+            determinant(A)
+            detp1Choice(B, 'B')
 
+        else:
+            break
 
-def remontéeREC(mat, b, i=None, j=None, x=None, somme=0):
-    if triI(mat) == True:
-        print('must be inf')
-        return None
+    return M1, M2
 
-    n = len(b)
-    if x is None:
-        x = [0.0] * n
-    if i is None:
-        i = n - 1
-    if j is None:
-        j = i + 1
-
-    if i < 0:
-        return x
-
-    if j < n:
-        return remontéeREC(mat, b, i, j + 1, x, somme + mat[i][j] * x[j])
-    else:
-        x[i] = (b[i] - somme) / mat[i][i]
-        return remontéeREC(mat, b, i - 1, None, x, 0)
-
-
-def Cramer(mat, b):
-    if det(mat) == 0:
-        return None
-
-    n = len(mat)
-    x = []
-
-    for i in range(n):
-        submat = []
-
-        for j in range(n):
-            submat.append(mat[j][:i] + [b[j]] + mat[j][i + 1:])
-
-        x.append(det(submat) / det(mat))
-
-    return x
-
-
-def RECramer(mat, b, i=0, x=None, detA=None, j=0, submat=None):
-    n = len(mat)
-
-    if x is None:
-        x = []
-        detA = det(mat)
-        if detA == 0:
-            return None
-
-    if i == n:
-        return x
-
-    if submat is None:
-        submat = []
-
-    if j < n:
-        row = mat[j][:i] + [b[j]] + mat[j][i + 1:]
-        submat.append(row)
-        return RECramer(mat, b, i, x, detA, j + 1, submat)
-
-    xi = det(submat) / detA
-    x.append(xi)
-
-    return RECramer(mat, b, i + 1, x, detA)
-
-
-def test():
-    A1 = [[3, 2, 5],
-          [0, 1, -3],
-          [0, 0, 1]]
-
-    b1 = [4, -2, 1]
-
-    A2 = [[4, 1, -1, -2],
-          [0, 3, -2, 1],
-          [0, 0, 1, -1],
-          [0, 0, 0, 1]]
-
-    b2 = [0, 5, 1, -1]
-
-    A3 = [[-2, 0, 0],
-          [-1, 3, 0],
-          [4, 1, 3]]
-
-    b3 = [4, -1, 0]
-
-    A4 = [[2, 0, 0, 0],
-          [-1, 2, 0, 0],
-          [4, -1, 3, 0],
-          [1, 3, -3, 2]]
-
-    b4 = [-4, 6, -1, -15]
-
-    pairs = [
-        (A1, b1, [remontéeITR, remontéeREC, Cramer, RECramer]),
-        (A2, b2, [remontéeITR, remontéeREC, Cramer, RECramer]),
-        (A3, b3, [descenteITR, descenteREC, Cramer, RECramer]),
-        (A4, b4, [descenteITR, descenteREC, Cramer, RECramer])
-    ]
-
-    func_names = {
-        remontéeITR: "remontée iterative",
-        remontéeREC: "remontée recursive",
-        descenteITR: "descente iterative",
-        descenteREC: "descente recursive",
-        Cramer: "Cramer iterative",
-        RECramer: "Cramer recursive"
-    }
-
-    for idx, (A, b, funcs) in enumerate(pairs, 1):
-        print(f"\nA{idx}:")
-        for func in funcs:
-            start = time.perf_counter_ns()
-            result = func(A, b)
-            end = time.perf_counter_ns()
-            exc_ns = end - start
-            print(f"{func_names[func]} result: {result} (time: {exc_ns} ns)")
-
-
-def afficher(A, b):
-    n = len(A)
-    for i in range(n):
-        for j in range(n):
-            print(A[i][j], end="\t")
-        print(f'| {b[i]}')
-
-
-def lireb(n):
-    b = []
-    for i in range(n):
-        b.append(int(input(f"b[{i}] = ")))
-    return b
-
-
-def main():
-    A = []
-    b = []
+def menuT2(M = None, l = None):
     x = []
 
     while True:
+        A, b = deepcopy(M), deepcopy(l)
+
         print("""
         1 - lire (A, b)
         2 - afficher (A, b)
         3 - algo de descente
         4 - algo de remontée
-        5 -algo de Cramer
+        5 - algo de Cramer
         """)
-        choice = int(input("Choisissez 1,5: "))
+
+        try:
+            choice = int(input("Choisissez 1,5 or anything for out: "))
+        except:
+            break
+
         if choice == 1:
-            n = int(input("Entrez N: "))
-            print("Lecture de A:")
-            A = lireA(n)
-            b = lireb(n)
-        if choice == 2:
+            try:
+                n = int(input("Entrez N: "))
+                print("Lecture de A:")
+                M = lireMatrice(n)
+                l = lireb(n)
+            except:
+                pass
+
+        elif choice == 2:
+            if A is None or b is None:
+                print('must read first')
+                continue
+
             print("(A, b):")
-            afficher(A, b)
-        if choice == 3:
-            choice = int(input("""
-            1 - descente iterative
-            2 - descente recursive: """))
+            print_system(A, b)
+
+        elif choice == 3:
+            if A is None or b is None:
+                print('must read first')
+                continue
+
+            try:
+                choice = int(input("""
+                1 - descente iterative
+                2 - descente recursive
+                : """))
+            except:
+                continue
+
             if choice == 1:
-                start = time.perf_counter_ns()
                 x = descenteITR(A, b)
-                end = time.perf_counter_ns()
-                exc_ns = end - start
-                print(f'x = {x} (time: {exc_ns} ns)')
-            if choice == 2:
-                start = time.perf_counter_ns()
+            elif choice == 2:
                 x = descenteREC(A, b)
-                end = time.perf_counter_ns()
-                exc_ns = end - start
-                print(f'x = {x} (time: {exc_ns} ns)')
-        if choice == 4:
-            choice = int(input('''
-            1 - remontée iterative
-            2 - remontée recursive: '''))
+            else:
+                print("Choix incorrect")
+                continue
+
+            print("Solution finale:")
+            printX(x)
+
+        elif choice == 4:
+            if A is None or b is None:
+                print('must read first')
+                continue
+
+            try:
+                choice = int(input('''
+                1 - remontée iterative
+                2 - remontée recursive
+                : '''))
+            except:
+                continue
+
             if choice == 1:
-                start = time.perf_counter_ns()
                 x = remontéeITR(A, b)
-                end = time.perf_counter_ns()
-                exc_ns = end - start
-                print(f'x = {x} (time: {exc_ns} ns)')
-            if choice == 2:
-                start = time.perf_counter_ns()
+            elif choice == 2:
                 x = remontéeREC(A, b)
-                end = time.perf_counter_ns()
-                exc_ns = end - start
-                print(f'x = {x} (time: {exc_ns} ns)')
-        if choice == 5:
-            choice = int(input('''
-            1 - Cramer iterative
-            2 - Cramer recursive: '''))
+            else:
+                print("Choix incorrect")
+                continue
+
+            print("Solution finale:")
+            printX(x)
+
+        elif choice == 5:
+            if A is None or b is None:
+                print('must read first')
+                continue
+
+            try:
+                choice = int(input('''
+                1 - Cramer iterative
+                2 - Cramer recursive
+                : '''))
+            except:
+                continue
+
             if choice == 1:
-                start = time.perf_counter_ns()
                 x = Cramer(A, b)
-                end = time.perf_counter_ns()
-                exc_ns = end - start
-                print(f'x = {x} (time: {exc_ns} ns)')
-            if choice == 2:
-                start = time.perf_counter_ns()
+            elif choice == 2:
                 x = RECramer(A, b)
-                end = time.perf_counter_ns()
-                exc_ns = end - start
-                print(f'x = {x} (time: {exc_ns} ns)')
+            else:
+                print("Choix incorrect")
+                continue
 
+            print("Solution finale:")
+            printX(x)
 
-test()
-main()
+        else:
+            break
+
+    return M, l
+
+def menuT3(M = None, l = None):
+    M, l = setAb(M, l)
+
+    while True:
+        A, b = deepcopy(M), deepcopy(l)
+
+        try:
+            method = int(input("Choisissez la méthode (1-Pivot non nul, 2-Pivot Partiel, 3-Pivot Total) : "))
+            choice = int(input("Choisissez (1-Itérative, 2-Récursive) : "))
+        except:
+            break
+
+        if method == 1:
+            if choice == 1:
+                print("\n--- Méthode Normale Itérative ---\n")
+                A, b = triangularisation(A, b)
+                remontéeITR(A, b)
+            else:
+                print("\n--- Méthode Normale Récursive ---\n")
+                A, b = triangularisationREC(A, b)
+                remontéeITR(A, b)
+
+        elif method == 2:
+            if choice == 1:
+                print("\n--- Méthode Pivot Partiel Itérative ---\n")
+                A, b = triangularisationPP(A, b)
+                remontéeITR(A, b)
+            else:
+                print("\n--- Méthode Pivot Partiel Récursive ---\n")
+                A, b = triangularisationPPREC(A, b)
+                remontéeITR(A, b)
+
+        elif method == 3:
+            if choice == 1:
+                print('\n--- Méthode Pivot Total Itérative ---\n')
+                A, b, col_perm = triangularisationPL(A, b)
+                order(A, b, col_perm)
+
+            if choice == 2:
+                print('\n--- Méthode Pivot Total Récursive ---\n')
+                A, b, col_perm = triangularisationPLREC(A, b)
+                order(A, b, col_perm)
+
+        else:
+            break
+
+    return M, l
+
+def menuT4p1(M = None, l = None):
+    M, l = setAb(M, l)
+
+    while True:
+        A, b = deepcopy(M), deepcopy(l)
+
+        try:
+            choice = int(input("""
+                1 - décomposition iterative
+                2 - décomposition recursive
+                : """))
+        except:
+            break
+
+        if choice == 1:
+            print("\n")
+            print("MÉTHODE ITÉRATIVE")
+
+            x_iter = solve_LU(copier_matrice(A), b[:])
+
+            print("\n")
+            print("Solution finale (itérative):")
+            printX(x_iter)
+
+        elif choice == 2:
+            print("\n")
+            print("MÉTHODE RÉCURSIVE")
+
+            x_rec = solve_LU_REC(copier_matrice(A), b[:])
+
+            print("\n")
+            print("Solution finale (récursive):")
+            printX(x_rec)
+
+        else:
+            break
+
+    return M, l
+
+def menuT4p2(M = None, l = None):
+    M, l = setAb(M, l)
+
+    while True:
+        A, b = deepcopy(M), deepcopy(l)
+
+        print("ALGORITHME DE GAUSS-JORDAN")
+        print()
+
+        print("Choisissez une option:")
+        print("1. Resoudre un systeme Ax=b")
+        print("2. Calculer la matrice inverse A^-1")
+        print("3. Toutes les methodes")
+
+        try:
+            choix = int(input("\nVotre choix (1/2/3): "))
+        except:
+            break
+
+        if choix == 1 or choix == 3:
+            if choix != 3:
+                print("""
+                1. iterative
+                2. recursive
+                : """)
+                try:
+                    choix = int(input("Votre choix (1/2): "))
+                except:
+                    continue
+
+            if choix == 1 or choix == 3:
+                print("PARTIE 1: RESOLUTION DU SYSTEME Ax=b (ITERATIF)")
+                print()
+
+                x = gauss_jordan_solution(copier_matrice(A), b[:])
+
+                print("Solution finale:")
+                printX(x)
+
+            if choix == 2 or choix == 3:
+                print("PARTIE 3: RESOLUTION DU SYSTEME Ax=b (RECURSIF)")
+                print()
+
+                x_rec = gauss_jordan_solution_REC(copier_matrice(A), b[:])
+
+                print("Solution finale:")
+                printX(x_rec)
+
+        if choix == 2 or choix == 3:
+            if choix != 3:
+                print("""
+                1. iterative
+                2. recursive
+                : """)
+                try:
+                    choix = int(input("Votre choix (1/2): "))
+                except:
+                    continue
+
+            if choix == 1 or choix == 3:
+                print("PARTIE 2: CALCUL DE LA MATRICE INVERSE A^-1 (ITERATIF)")
+                print()
+
+                A_inv = gauss_jordan_inverse(copier_matrice(A))
+
+                print("Matrice inverse finale:")
+                print_system(A_inv)
+
+            if choix == 2 or choix == 3:
+                print("PARTIE 4: CALCUL DE LA MATRICE INVERSE A^-1 (RECURSIF)")
+                print()
+
+                A_inv_rec = gauss_jordan_inverse_REC(copier_matrice(A))
+
+                print("Matrice inverse finale:")
+                print_system(A_inv_rec)
+
+        if not valid(choix, 1, 3):
+            break
+
+    return M, l
+
+def menuT5(M = None, l = None):
+    M, l = setAb(M, l)
+
+    while True:
+        A, b = deepcopy(M), deepcopy(l)
+
+        print("METHODES ITERATIVES")
+        print()
+
+        print("Choisissez une methode:")
+        print("1. Methode de Jacobi")
+        print("2. Methode de Gauss-Seidel")
+        print("3. Toutes les methodes")
+
+        try:
+            choix = int(input("\nVotre choix (1/2/3): "))
+        except:
+            break
+
+        print("\nEntrez le nombre maximum d'iterations [default: 10]:")
+        try:
+            n_max = int(input("N max = "))
+        except:
+            n_max = 10
+
+        print("\nEntrez la precision (epsilon) [default: 1e-10]:")
+        try:
+            epsilon = float(input("epsilon = "))
+        except:
+            epsilon = 1e-10
+
+        if choix == 1 or choix == 3:
+            if choix != 5:
+                print("""
+                1. iterative
+                2. recursive
+                : """)
+                try:
+                    choix = int(input("Votre choix (1/2): "))
+                except:
+                    continue
+
+            if choix == 1 or choix == 5:
+                print("\n")
+                print("METHODE DE JACOBI (ITERATIVE)")
+                print()
+
+                x_jacobi = jacobi(copier_matrice(A), b[:], n_max, epsilon)
+
+            if choix == 2 or choix == 5:
+                print("\n")
+                print("METHODE DE JACOBI (RECURSIVE)")
+                print()
+
+                x_jacobi_rec = jacobi_REC(copier_matrice(A), b[:], n_max, epsilon)
+
+        if choix == 2 or choix == 3:
+            if choix != 3:
+                print("""
+                1. iterative
+                2. recursive
+                : """)
+                try:
+                    choix = int(input("Votre choix (1/2): "))
+                except:
+                    continue
+
+            if choix == 1 or choix == 3:
+                print("\n")
+                print("METHODE DE GAUSS-SEIDEL (ITERATIVE)")
+                print()
+
+                x_gs = gauss_seidel(copier_matrice(A), b[:], n_max, epsilon)
+
+            if choix == 2 or choix == 3:
+                print("\n")
+                print("METHODE DE GAUSS-SEIDEL (RECURSIVE)")
+                print()
+
+                x_gs_rec = gauss_seidel_REC(copier_matrice(A), b[:], n_max, epsilon)
+
+        if not valid(choix, 1, 3):
+            break
+
+    return M, l
+
+def MainMenu():
+    A = None
+    b = None
+    B = None
+
+    while True:
+        start = time.perf_counter_ns()
+
+        choice = input("""
+        1- basic concepts
+        2- Crammer
+        3- Gauss
+        4- Algorithme de décomposition LU
+        5- ALGORITHME DE GAUSS-JORDAN
+        6- METHODES ITERATIVES
+        : """)
+
+        try:
+            choice = int(choice)
+        except:
+            continue
+
+        if choice == 0:
+            break
+        elif choice == 1:
+            A, B = menuT1(A, B)
+        elif choice == 2:
+            A, b = menuT2(A, b)
+        elif choice == 3:
+            A, b = menuT3(A, b)
+        elif choice == 4:
+            A, b = menuT4p1(A, b)
+        elif choice == 5:
+            A, b = menuT4p2(A, b)
+        elif choice == 6:
+            A, b = menuT5(A, b)
+
+        end = time.perf_counter_ns()
+        exc_ns = end - start
+        exc_s = exc_ns / 1e9
+        print(f"execution time : {exc_s} s")
+
+MainMenu()
